@@ -1,32 +1,31 @@
 import jwt from "jsonwebtoken";
 import { getUser } from "../controllers/userController.js";
 
-const auth = async (req, res, next) => {
-  try {
-    const token = req.signedCookies.token;
-    // const token = await req.headers["x-auth-token"];
-    const id = await req.headers.id;
+// const auth = async (req, res, next) => {
+//   try {
+//     const token = req.signedCookies.token;
+//     // const token = await req.headers["x-auth-token"];
+//     const id = await req.headers.id;
 
-    if (token && id) {
-      const decode = jwt.verify(token, process.env.SECRET_KEY);
+//     if (token && id) {
+//       const decode = jwt.verify(token, process.env.SECRET_KEY);
 
-      const user = await getUser(decode.id);
+//       const user = await getUser(decode.id);
 
-      const recipe = await getRecipeById(id);
+//       const recipe = await getRecipeById(id);
 
-      if (recipe[0].user.userid == user._id || user.role === "Admin") {
-        next();
-      } else res.status(401).send({ message: "unauthorized" });
-    }
-  } catch (error) {
-    res.status(400).send({ message: "unauthorized" });
-  }
-};
+//       if (recipe[0].user.userid == user._id || user.role === "Admin") {
+//         next();
+//       } else res.status(401).send({ message: "unauthorized" });
+//     }
+//   } catch (error) {
+//     res.status(400).send({ message: "unauthorized" });
+//   }
+// };
 
 const validateToken = async (req, res, next) => {
   try {
-    const token = req.signedCookies.token;
-    // const token = await req.headers["x-auth-token"];
+    const token = await req.signedCookies.datas[0].token;
 
     const decode = await jwt.decode(token);
 
@@ -35,30 +34,29 @@ const validateToken = async (req, res, next) => {
     const current = new Date();
 
     if (expiry > current) {
+      req.userId = decode.id;
       return next();
     }
-    return res.status(400).send({ message: "Session expired" });
+    return res.status(401).send({ message: "Session expired" });
   } catch (error) {
-    res.status(400).send({ message: "Session expired" });
+    res.status(401).send({ message: "Session expired" });
   }
 };
 
 const adminAuth = async (req, res, next) => {
   try {
-    const token = req.signedCookies.token;
-    const userRole = req.signedCookies.role;
-    // const token = await req.headers["x-auth-token"];
-    // const userRole = await req.headers.role;
+    const userRole = await req.signedCookies.datas[0].role;
 
-    const decode = jwt.decode(token);
+    const isUser = await getUser(req.userId);
+    // console.log(isUser);
 
-    if (decode.role === "Admin" && userRole === "Admin") {
+    if (isUser.role === "Admin" && userRole === "Admin") {
       return next();
     }
-    return res.status(400).send({ message: "Login as a Admin to continue" });
+    return res.status(401).send({ message: "Login as a Admin to continue" });
   } catch (error) {
-    res.status(400).send({ message: "Login as a Admin to continue" });
+    res.status(401).send({ message: "Login as a Admin to continue" });
   }
 };
 
-export { auth, validateToken, adminAuth };
+export { validateToken, adminAuth };

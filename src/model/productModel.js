@@ -1,46 +1,68 @@
 import mongoose from "mongoose";
+import { type } from "os";
+
+const categorySchema = mongoose.Schema({
+  categoryName: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  level: {
+    type: String,
+    default: 1,
+  },
+  parentCategory: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "category",
+    default: null,
+  },
+});
 
 const ProductsSchema = mongoose.Schema({
   productName: {
     type: String,
     required: [true, "product name is required"],
   },
+  productDescription: {
+    type: String,
+    required: [true, "product Description is required"],
+  },
   productBrand: {
     type: String,
     required: [true, "Product Brand is required"],
   },
   productImages: {
-    type: [string],
+    type: [String],
     validate: {
       validator: function (imageArray) {
         return imageArray.length <= 4;
       },
-      message: "Four Image scan be added",
+      message: "Four Images can be added",
     },
   },
-  stocks: [
-    {
-      size: {
-        type: String,
-        require: true,
-        enum: ["S", "M", "L", "XL", "XXL"],
-      },
-      quantity: {
-        type: Number,
-        require: true,
-        min: [0, "Quantity cannot be negative"],
-      },
-    },
-  ],
+  stocks: {
+    total: { type: Number },
+    S: { type: Number },
+    M: { type: Number },
+    L: { type: Number },
+    XL: { type: Number },
+  },
+  category: { type: String, required: [true, "category is required"] },
+  subCategory: { type: String, required: [true, "category is required"] },
+  color: { type: String },
+  material: { type: String },
   productPrice: {
     type: Number,
     required: true,
   },
-  offer: {
+  discountPercent: {
     type: Number,
   },
   deliveredAt: {
     type: Number,
+  },
+  isOutOfStock: {
+    type: Boolean,
   },
 
   createdAt: {
@@ -59,3 +81,4 @@ ProductsSchema.pre("save", function (next) {
 });
 
 export const Products = mongoose.model("products", ProductsSchema);
+export const Category = mongoose.model("Category", categorySchema);

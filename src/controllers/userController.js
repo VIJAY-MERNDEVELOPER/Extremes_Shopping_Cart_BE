@@ -3,7 +3,7 @@ import { User } from "../model/userModel.js";
 import bcrypt from "bcrypt";
 
 async function userExist(email) {
-  return await User.findOne({ email: email });
+  return await User.findOne({ email: email }, { _id: 1, cart: 0 });
 }
 
 async function getUser(id) {

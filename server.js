@@ -3,11 +3,15 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { userRoutes } from "./src/routes/userRoutes.js";
 
-import { dbConnection } from "./src/db/db.js";
+import { dbConnection } from "./src/config/db.js";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import mongoose, { mongo } from "mongoose";
+import { paymentRoutes } from "./src/routes/paymentRoutes.js";
+import { productRoutes } from "./src/routes/productRoutes.js";
+import { cartRoutes } from "./src/routes/cartRoutes.js";
+import { orderRoutes } from "./src/routes/orderRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -41,7 +45,7 @@ app.use(
     }),
   })
 );
-
+app.use(express.static("uploads"));
 // initializing passport
 
 // Port from Environment Variable
@@ -52,7 +56,10 @@ const PORT = process.env.PORT;
 
 // Define routes
 app.use("/api/user", userRoutes);
-// app.use("/api/products", productRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/order", orderRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.listen(PORT, () => console.log(`Server listening to PORT: ${PORT}`));
 

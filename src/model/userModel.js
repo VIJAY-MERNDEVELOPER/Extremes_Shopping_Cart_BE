@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Products } from "./productModel.js";
 
 export const addressSchema = new mongoose.Schema({
   street: {
@@ -21,6 +22,10 @@ export const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  contactNumber: {
+    type: String,
+    required: true,
+  },
   isDefault: {
     type: Boolean,
     default: false,
@@ -30,12 +35,17 @@ export const addressSchema = new mongoose.Schema({
 export const cartSchema = new mongoose.Schema({
   productId: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: "Products",
     required: true,
   },
   quantity: {
     type: Number,
     required: true,
     default: 1,
+  },
+  size: {
+    type: String,
+    required: true,
   },
 });
 
@@ -52,15 +62,16 @@ export const wishListSchema = new mongoose.Schema({
 });
 
 export const orderSchema = new mongoose.Schema({
-  orderId: {
-    type: String,
-    required: true,
-  },
-  products: [
+  orderItems: [
     {
       productId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Products",
+        ref: Products,
+        required: true,
+      },
+
+      size: {
+        type: String,
         required: true,
       },
       quantity: {
@@ -71,9 +82,28 @@ export const orderSchema = new mongoose.Schema({
         type: Number,
         required: true,
       },
+      discountedPrice: {
+        type: Number,
+        required: true,
+      },
+      deliveryDate: {
+        type: Date,
+      },
     },
   ],
   totalAmount: {
+    type: Number,
+    required: true,
+  },
+  totalItems: {
+    type: Number,
+    required: true,
+  },
+  totalDiscountAmount: {
+    type: Number,
+    required: true,
+  },
+  discount: {
     type: Number,
     required: true,
   },
@@ -81,11 +111,46 @@ export const orderSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  deliveryAddress: addressSchema,
-  status: {
+
+  shippingAddress: {
+    type: String,
+  },
+  //  {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "addressSchema",
+  // }
+  orderStatus: {
     type: String,
     enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
     default: "Pending",
+  },
+  paymentDetails: {
+    paymentMethod: {
+      type: String,
+    },
+    transactionId: {
+      type: String,
+    },
+    paymentId: {
+      type: String,
+    },
+    paymentStatus: {
+      type: String,
+      default: "pending",
+    },
+  },
+  isCancelled: {
+    type: Boolean,
+    default: false,
+  },
+  cancellationReason: {
+    type: String,
+  },
+  cancelledBy: {
+    type: String,
+  },
+  canecllationDate: {
+    type: Date,
   },
 });
 
@@ -115,7 +180,7 @@ const userSchema = new mongoose.Schema({
   wishlist: {
     type: [wishListSchema],
   },
-  orderHistory: {
+  order: {
     type: [orderSchema],
   },
   address: {

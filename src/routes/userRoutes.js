@@ -11,7 +11,7 @@ import {
   deleteUser,
 } from "../controllers/userController.js";
 import bcrypt from "bcryptjs";
-import { adminAuth, auth, validateToken } from "../middleware/auth.js";
+import { adminAuth, validateToken } from "../middleware/auth.js";
 
 import jwt from "jsonwebtoken";
 
@@ -21,9 +21,10 @@ const router = express.Router();
 
 router.post("/register", async (req, res) => {
   try {
-    const { username, email, password, role } = req.body;
+    const { firstname, lastname, email, password, role } = await req.body;
+    const username = firstname + lastname;
 
-    if (!username || !email || !password) {
+    if (!firstname || !lastname || !email || !password) {
       return res.status(400).send({ message: "Enter all necessary details" });
     } else {
       const isUserExist = await userExist(email);
@@ -34,19 +35,30 @@ router.post("/register", async (req, res) => {
 
         if (newPassword) {
           const user = await createUser(username, email, newPassword, role);
-
+          console.log("user", user);
           const token = await generateToken(user._id, user.username, user.role);
-          res.cookie("token", token, { maxAge: 100000 * 60, signed: true });
+          res.cookie("token", token, {
+            httpOnly: true,
+            maxAge: 100000 * 60,
+            signed: true,
+          });
 
           return res.status(201).send({
             message: "user created successfully",
-            data: { userId: user._id, token },
+            data: {
+              userId: user._id,
+              username: user.username,
+              cart: user.cart,
+            },
           });
         }
       }
     }
   } catch (error) {
-    res.status(500).send({ message: error.message || "Internal Server Error" });
+    console.log(error);
+    return res
+      .status(500)
+      .send({ message: error.message || "Internal Server Error" });
   }
 });
 
@@ -70,43 +82,34 @@ router.post("/login", async (req, res) => {
         const token = await generateToken(user._id, user.username, user.role);
         const decode = jwt.verify(token, process.env.SECRET_KEY);
 
-        const expiry = new Date(decode.exp * 1000).toLocaleString("en-IN");
+        const expiry = await new Date(decode.exp * 1000).toLocaleString(
+          "en-IN"
+        );
         // Set user-specific session data
         req.session.user = { username: user.username };
         res.cookie("token", token, {
+          httpOnly: true,
           maxAge: 100000 * 60,
+          signed: true,
         });
 
-        res.cookie("cart", [{ productId: "hgvsdfv", quantity: 5 }]);
-
-        res.cookie(
-          "datas",
-          [
-            {
-              message: "Login Successful",
-              id: user.id,
-              username: user.username,
-              role: user.role,
-              token,
-              expiry,
-            },
-          ],
-          { maxAge: 100000 * 60, signed: true }
-        );
+        res.cookie("username", user.username, { maxAge: 100000 * 60 });
 
         return res.status(200).send({
           message: "Login Successful",
-          id: user.id,
-          username: user.username,
-          role: user.role,
-          token,
-          expiry,
+          data: {
+            userId: user._id,
+            username: user.username,
+            cart: user.cart,
+          },
         });
       } else return res.status(400).send({ message: "Incorrect Credentials" });
     }
     return res.status(400).send({ message: "user does not Exists" });
   } catch (error) {
-    res.status(500).send({ message: error.message || "Internal Server Error" });
+    return res
+      .status(500)
+      .send({ message: error.message || "Internal Server Error" });
   }
 });
 
@@ -117,7 +120,9 @@ router.get("/getusers", validateToken, adminAuth, async (req, res) => {
       res.status(201).send({ message: "Users fetched Successfully", allUsers });
     }
   } catch (error) {
-    res.status(500).send({ message: error.message || "Internal Server Error" });
+    return res
+      .status(500)
+      .send({ message: error.message || "Internal Server Error" });
   }
 });
 
@@ -134,9 +139,11 @@ router.put("/update/:id", validateToken, adminAuth, async (req, res) => {
         .status(201)
         .send({ message: "User Updated Successfully", updatedUser });
     }
-    res.status(400).send({ message: "unable to update" });
+    return res.status(400).send({ message: "unable to update" });
   } catch (error) {
-    res.status(500).send({ message: error.message || "Internal Server Error" });
+    return res
+      .status(500)
+      .send({ message: error.message || "Internal Server Error" });
   }
 });
 
@@ -151,9 +158,11 @@ router.delete("/delete/:id", validateToken, adminAuth, async (req, res) => {
         .status(201)
         .send({ message: `${user.username} deleted Successfully` });
     }
-    res.status(401).send({ message: `Unable to Find User` });
+    return res.status(401).send({ message: `Unable to Find User` });
   } catch (error) {
-    res.status(500).send({ message: error.message || "Internal Server Error" });
+    return res
+      .status(500)
+      .send({ message: error.message || "Internal Server Error" });
   }
 });
 
