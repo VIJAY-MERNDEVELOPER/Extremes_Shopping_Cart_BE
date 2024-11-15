@@ -93,7 +93,6 @@ router.post("/login", async (req, res) => {
           sameSite: "none",
           httpOnly: true,
           secure: true,
-          maxAge: 100000 * 60,
           signed: true,
         });
 
