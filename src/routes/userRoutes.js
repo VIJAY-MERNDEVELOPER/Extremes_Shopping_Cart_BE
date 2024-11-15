@@ -112,6 +112,7 @@ router.post("/login", async (req, res) => {
     }
     return res.status(400).send({ message: "user does not Exists" });
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
       .send({ message: error.message || "Internal Server Error" });
