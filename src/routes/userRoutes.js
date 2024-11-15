@@ -38,7 +38,7 @@ router.post("/register", async (req, res) => {
           console.log("user", user);
           const token = await generateToken(user._id, user.username, user.role);
           res.cookie("token", token, {
-            sameSite: "Strict",
+            sameSite: "none",
             httpOnly: true,
             maxAge: 100000 * 60,
             signed: true,
@@ -89,14 +89,14 @@ router.post("/login", async (req, res) => {
         // Set user-specific session data
         req.session.user = { username: user.username };
         res.cookie("token", token, {
-          sameSite: "Strict",
+          sameSite: "none",
           httpOnly: true,
           maxAge: 100000 * 60,
           signed: true,
         });
 
         res.cookie("username", user.username, {
-          sameSite: "Strict",
+          sameSite: "none",
           maxAge: 100000 * 60,
         });
 
