@@ -22,7 +22,7 @@ const secretkey = process.env.SECRET_KEY;
 app.use(
   cors({
     credentials: true,
-    origin: "https://extremes-shopping-cart-fe.onrender.com/*",
+    origin: "https://extremes-shopping-cart-fe.onrender.com/login",
   })
 );
 // credentials: true,
