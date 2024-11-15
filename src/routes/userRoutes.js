@@ -88,7 +88,7 @@ router.post("/login", async (req, res) => {
           "en-IN"
         );
         // Set user-specific session data
-        req.session.user = { username: user.username };
+        // req.session.user = { username: user.username };
         res.cookie("token", token, {
           sameSite: "Lax",
           httpOnly: true,
