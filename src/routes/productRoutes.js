@@ -6,23 +6,29 @@ import {
   updateProductById,
 } from "../controllers/productController.js";
 import { upload } from "../middleware/multer.js";
+import { validateToken } from "../middleware/auth.js";
 
 const router = Router();
 
-router.post("/addproduct", upload.array("productImages"), async (req, res) => {
-  try {
-    const productData = await req.body;
-    const imagePath = req?.files.map((file) => file.path);
-    // console.log(req.files);
-    await createNewProduct({ ...productData, productImages: [...imagePath] });
-    console.log({ ...productData });
-    return res.status(201).send({ message: "product created", productData });
-  } catch (error) {
-    return res
-      .status(500)
-      .send({ message: error.message || "Internal Server Error" });
+router.post(
+  "/addproduct",
+  validateToken,
+  upload.array("productImages"),
+  async (req, res) => {
+    try {
+      const productData = await req.body;
+      const imagePath = req?.files.map((file) => file.path);
+      // console.log(req.files);
+      await createNewProduct({ ...productData, productImages: [...imagePath] });
+      console.log({ ...productData });
+      return res.status(201).send({ message: "product created", productData });
+    } catch (error) {
+      return res
+        .status(500)
+        .send({ message: error.message || "Internal Server Error" });
+    }
   }
-});
+);
 
 router.get("/getallproducts", async (req, res) => {
   try {
