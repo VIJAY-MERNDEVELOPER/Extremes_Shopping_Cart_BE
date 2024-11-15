@@ -75,11 +75,11 @@ router.post("/login", async (req, res) => {
       const checkPassword = await bcrypt.compare(password, user.password);
 
       if (checkPassword) {
-        req.session.regenerate((err) => {
-          if (err) {
-            return res.status(500).send("Error regenerating session");
-          }
-        });
+        // req.session.regenerate((err) => {
+        //   if (err) {
+        //     return res.status(500).send("Error regenerating session");
+        //   }
+        // });
         const token = await generateToken(user._id, user.username, user.role);
         const decode = jwt.verify(token, process.env.SECRET_KEY);
 
@@ -87,12 +87,11 @@ router.post("/login", async (req, res) => {
           "en-IN"
         );
         // Set user-specific session data
-        req.session.user = { username: user.username };
+        // req.session.user = { username: user.username };
         res.cookie("token", token, {
           httpOnly: true,
           maxAge: 100000 * 60,
-          sameSite: "none",
-          domain: "extremes-shopping-cart-fe.onrender.com",
+         
           signed: true,
         });
 
