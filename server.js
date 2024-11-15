@@ -19,12 +19,7 @@ const app = express();
 const secretkey = process.env.SECRET_KEY;
 
 // All the  MiddleWares required are used here
-app.use(
-  cors({
-    credentials: true,
-    origin: "https://extremes-shopping-cart-fe.onrender.com/",
-  })
-);
+app.use(cors());
 // credentials: true,
 // methods: ["GET", "POST", "PUT", "DELETE"],
 // allowedHeaders: ["Content-Type"],
