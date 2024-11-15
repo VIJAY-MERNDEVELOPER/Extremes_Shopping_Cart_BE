@@ -98,7 +98,7 @@ router.post("/login", async (req, res) => {
 
         res.cookie("username", user.username, {
           sameSite: "none",
-          maxAge: 100000 * 60,
+       
         });
 
         return res.status(200).send({
