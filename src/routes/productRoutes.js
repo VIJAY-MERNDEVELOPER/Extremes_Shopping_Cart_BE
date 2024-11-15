@@ -13,7 +13,7 @@ router.post("/addproduct", upload.array("productImages"), async (req, res) => {
   try {
     const productData = await req.body;
     const imagePath = req?.files.map((file) => file.path);
-    console.log(req.files);
+    // console.log(req.files);
     await createNewProduct({ ...productData, productImages: [...imagePath] });
     console.log({ ...productData });
     return res.status(201).send({ message: "product created", productData });
@@ -26,11 +26,10 @@ router.post("/addproduct", upload.array("productImages"), async (req, res) => {
 
 router.get("/getallproducts", async (req, res) => {
   try {
-    const allProducts = await getAllProducts();
-    return res
-      .status(200)
-      .send({ message: "all products received", allProducts });
+    const products = await getAllProducts();
+    return res.status(200).send({ message: "all products received", products });
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
       .send({ message: error.message || "Internal Server Error" });
@@ -73,9 +72,9 @@ router.put("/editproduct/:id", async (req, res) => {
   }
 });
 
-router.post("/test", upload.array("productImages"), async (req, res) => {
-  console.log("test", Array.from(req.files));
-  console.log(req.body.productName);
-});
+// router.post("/test", upload.array("productImages"), async (req, res) => {
+//   console.log("test", Array.from(req.files));
+//   console.log(req.body.productName);
+// });
 
 export const productRoutes = router;
