@@ -90,15 +90,14 @@ router.post("/login", async (req, res) => {
         // Set user-specific session data
         req.session.user = { username: user.username };
         res.cookie("token", token, {
-          sameSite: "none",
+          sameSite: "Lax",
           httpOnly: true,
           secure: true,
           signed: true,
         });
 
         res.cookie("username", user.username, {
-          sameSite: "none",
-       
+          sameSite: "Lax",
         });
 
         return res.status(200).send({
