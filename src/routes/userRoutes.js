@@ -41,7 +41,6 @@ router.post("/register", async (req, res) => {
             httpOnly: true,
             maxAge: 100000 * 60,
             sameSite: "none",
-            domain: "https://extremes-shopping-cart-fe.onrender.com/",
             signed: true,
           });
 
@@ -92,6 +91,8 @@ router.post("/login", async (req, res) => {
         res.cookie("token", token, {
           httpOnly: true,
           maxAge: 100000 * 60,
+          sameSite: "none",
+          domain: "extremes-shopping-cart-fe.onrender.com",
           signed: true,
         });
 
