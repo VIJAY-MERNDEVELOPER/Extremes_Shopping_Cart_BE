@@ -38,10 +38,10 @@ router.post("/register", async (req, res) => {
           console.log("user", user);
           const token = await generateToken(user._id, user.username, user.role);
           res.cookie("token", token, {
-            sameSite: "none",
             httpOnly: true,
             maxAge: 100000 * 60,
-            secure: true,
+            sameSite: "none",
+            domain: "https://extremes-shopping-cart-fe.onrender.com/",
             signed: true,
           });
 
@@ -88,17 +88,14 @@ router.post("/login", async (req, res) => {
           "en-IN"
         );
         // Set user-specific session data
-        // req.session.user = { username: user.username };
+        req.session.user = { username: user.username };
         res.cookie("token", token, {
-          sameSite: "Lax",
           httpOnly: true,
-          secure: true,
+          maxAge: 100000 * 60,
           signed: true,
         });
 
-        res.cookie("username", user.username, {
-          sameSite: "Lax",
-        });
+        res.cookie("username", user.username, { maxAge: 100000 * 60 });
 
         return res.status(200).send({
           message: "Login Successful",
@@ -112,7 +109,6 @@ router.post("/login", async (req, res) => {
     }
     return res.status(400).send({ message: "user does not Exists" });
   } catch (error) {
-    console.log(error);
     return res
       .status(500)
       .send({ message: error.message || "Internal Server Error" });
