@@ -18,11 +18,15 @@ const app = express();
 
 const secretkey = process.env.SECRET_KEY;
 
+const frontendUrl = process.env.NODE_ENV;
+
 // All the  MiddleWares required are used here
 app.use(
   cors({
     credentials: true,
-    origin: "https://extremes-shopping-cart-fe.onrender.com",
+    origin:
+      "http://localhost:5173" ||
+      "https://extremes-shopping-cart-fe.onrender.com",
   })
 );
 
@@ -68,7 +72,10 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/payment", paymentRoutes);
 
-app.listen(PORT, () => console.log(`Server listening to PORT: ${PORT}`));
+app.listen(PORT, () => {
+  console.log(process.env.NODE_ENV);
+  console.log(`Server listening to PORT: ${PORT}`);
+});
 
 // By default session stored in server memory when it restarted the session will be cleared
 // session have to be stored in DB for better usage
