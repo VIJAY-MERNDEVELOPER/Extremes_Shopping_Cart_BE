@@ -26,7 +26,7 @@ import { getUser } from "../controllers/userController.js";
 const validateToken = async (req, res, next) => {
   try {
     const token = await req.signedCookies.token;
-    // console.log(token);
+    console.log(token);
     const decode = await jwt.decode(token);
 
     const expiry = new Date(decode.exp * 1000);
