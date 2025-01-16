@@ -1,7 +1,6 @@
 import { User } from "../model/userModel.js";
 
-async function createOrder(userId, orderData) {
-  /*
+/*
 orderData in the  format of
 _id:ObjectId(""),
 orderItems:[{"productId:"","size":"","quantity":Num,"price":Num,"discountPrice":Num,"deliveryDate":Date}],
@@ -19,12 +18,15 @@ paymentStatus:pending
 }
 
 */
+
+async function createOrder(userId, orderData) {
   // console.log("body", orderData);
   return await User.findByIdAndUpdate(
     { _id: userId },
     { $push: { order: orderData } },
     { new: true }
   )
+    .select({ order: { $slice: -1 } })
     .then((result) => result.order)
     .catch((error) => error.message);
 }
@@ -54,6 +56,16 @@ async function updateOrderStaus(userId, orderId, orderStatus) {
     .catch((error) => {
       throw new Error(error);
     });
+}
+
+async function updateOrderAddress(userId, orderId, addressId) {
+  return await User.findOneAndUpdate(
+    { _id: userId, "order._id": orderId },
+    {
+      $set: { "order.$.shippingAddress": addressId },
+    },
+    { new: true }
+  );
 }
 
 // still work pending
@@ -86,6 +98,7 @@ export {
   findOrderById,
   getUsersAllOrders,
   getAllOrders,
+  updateOrderAddress,
   updateOrderStaus,
   cancelOrderById,
 };

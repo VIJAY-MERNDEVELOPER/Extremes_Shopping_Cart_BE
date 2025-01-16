@@ -12,21 +12,20 @@ import { paymentRoutes } from "./src/routes/paymentRoutes.js";
 import { productRoutes } from "./src/routes/productRoutes.js";
 import { cartRoutes } from "./src/routes/cartRoutes.js";
 import { orderRoutes } from "./src/routes/orderRoutes.js";
+import { addressRoutes } from "./src/routes/addresRoutes.js";
 
 dotenv.config();
 const app = express();
 
 const secretkey = process.env.SECRET_KEY;
 
-const frontendUrl = process.env.NODE_ENV;
-
 // All the  MiddleWares required are used here
 app.use(
   cors({
     credentials: true,
-    origin:
-      "http://localhost:5173" ||
-      "https://extremes-shopping-cart-fe.onrender.com",
+    origin: "https://extremes-shopping-cart-fe.onrender.com",
+    // "http://localhost:5173" || "http://localhost:5175"||
+    // "https://extremes-shopping-cart-fe.onrender.com",
   })
 );
 
@@ -71,9 +70,9 @@ app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/address", addressRoutes);
 
 app.listen(PORT, () => {
-  console.log(process.env.NODE_ENV);
   console.log(`Server listening to PORT: ${PORT}`);
 });
 

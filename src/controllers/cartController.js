@@ -34,11 +34,20 @@ export async function findProductInCart(userId, productId) {
   //  User.findById(userId, { "cart.productId": productId });
 }
 
-export async function removeProductFromCart(userId, productId) {
+export async function findCartItem(userId, cartId) {
+  return await User.findOne(
+    { _id: userId, "cart._id": cartId },
+    { "cart.$": 1, _id: 0 }
+  )
+    .then((result) => result.cart)
+    .catch((error) => error.message);
+}
+
+export async function removeProductFromCart(userId, cartId) {
   return await User.findByIdAndUpdate(
     userId,
     {
-      $pull: { cart: { productId: productId } },
+      $pull: { cart: { _id: cartId } },
     },
     { new: true }
   ).select(
@@ -46,11 +55,7 @@ export async function removeProductFromCart(userId, productId) {
   );
 }
 
-export async function cartProductQuantityUpdate(
-  userId,
-  productId,
-  newQuantity
-) {
+export async function cartProductUpdate(userId, productId, newQuantity) {
   return await User.findOneAndUpdate(
     { _id: userId, "cart.productId": productId },
     { $inc: { "cart.$.quantity": newQuantity } },
@@ -63,4 +68,14 @@ export async function cartProductQuantityUpdate(
     .catch((error) => {
       return error;
     });
+}
+
+export async function cartProductQuantityUpdate(userId, cartId, quantity) {
+  return await User.findOneAndUpdate(
+    { _id: userId, "cart._id": cartId },
+    { "cart.$.quantity": quantity },
+    { new: true }
+  )
+    .then((result) => result.cart.filter((item) => item._id == cartId))
+    .catch((error) => error.message);
 }

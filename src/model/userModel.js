@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import { Products } from "./productModel.js";
 
 export const addressSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
   street: {
     type: String,
     required: true,
@@ -17,8 +21,9 @@ export const addressSchema = new mongoose.Schema({
   country: {
     type: String,
     required: true,
+    default: "India",
   },
-  pinCode: {
+  pincode: {
     type: String,
     required: true,
   },
@@ -61,98 +66,101 @@ export const wishListSchema = new mongoose.Schema({
   },
 });
 
-export const orderSchema = new mongoose.Schema({
-  orderItems: [
-    {
-      productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: Products,
-        required: true,
-      },
+export const orderSchema = new mongoose.Schema(
+  {
+    orderItems: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: Products,
+          required: true,
+        },
 
-      size: {
+        size: {
+          type: String,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+        },
+        productPrice: {
+          type: Number,
+          required: true,
+        },
+        discountPercentage: {
+          type: Number,
+          required: true,
+        },
+        deliveryDate: {
+          type: Date,
+          default: function () {
+            // Calculate delivery date 5 days after orderDate
+            return new Date(
+              this.parent().orderDate.getTime() + 5 * 24 * 60 * 60 * 1000
+            );
+          },
+        },
+        _id: false,
+      },
+    ],
+    totalItems: {
+      type: Number,
+      required: true,
+    },
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    totalDiscount: {
+      type: Number,
+      required: true,
+    },
+    orderDate: {
+      type: Date,
+      default: Date.now(),
+    },
+    shippingAddress: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "addressSchema",
+    },
+    orderStatus: {
+      type: String,
+      enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
+      default: "Pending",
+    },
+    paymentDetails: {
+      paymentMethod: {
         type: String,
-        required: true,
       },
-      quantity: {
-        type: Number,
-        required: true,
+      transactionId: {
+        type: String,
       },
-      price: {
-        type: Number,
-        required: true,
+      paymentId: {
+        type: String,
       },
-      discountedPrice: {
-        type: Number,
-        required: true,
-      },
-      deliveryDate: {
-        type: Date,
+      paymentStatus: {
+        type: String,
+        enum: ["pending", "completed", "failed"],
+        default: "pending",
       },
     },
-  ],
-  totalAmount: {
-    type: Number,
-    required: true,
-  },
-  totalItems: {
-    type: Number,
-    required: true,
-  },
-  totalDiscountAmount: {
-    type: Number,
-    required: true,
-  },
-  discount: {
-    type: Number,
-    required: true,
-  },
-  orderDate: {
-    type: Date,
-    default: Date.now,
-  },
-
-  shippingAddress: {
-    type: String,
-  },
-  //  {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "addressSchema",
-  // }
-  orderStatus: {
-    type: String,
-    enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
-    default: "Pending",
-  },
-  paymentDetails: {
-    paymentMethod: {
+    isCancelled: {
+      type: Boolean,
+      default: false,
+    },
+    cancellationReason: {
       type: String,
     },
-    transactionId: {
+    cancelledBy: {
       type: String,
     },
-    paymentId: {
-      type: String,
-    },
-    paymentStatus: {
-      type: String,
-      default: "pending",
+    canecllationDate: {
+      type: Date,
     },
   },
-  isCancelled: {
-    type: Boolean,
-    default: false,
-  },
-  cancellationReason: {
-    type: String,
-  },
-  cancelledBy: {
-    type: String,
-  },
-  canecllationDate: {
-    type: Date,
-  },
-});
+  { strict: false }
+);
 
 const userSchema = new mongoose.Schema({
   username: {

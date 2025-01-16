@@ -3,11 +3,16 @@ import { validateToken } from "../middleware/auth.js";
 import {
   addProducToCart,
   cartProductQuantityUpdate,
+  cartProductUpdate,
   fetchCartProduct,
+  findCartItem,
   findProductInCart,
   removeProductFromCart,
 } from "../controllers/cartController.js";
-import { getProductById } from "../controllers/productController.js";
+import {
+  getProductById,
+  getProductsById,
+} from "../controllers/productController.js";
 
 const router = Router();
 
@@ -16,20 +21,22 @@ const router = Router();
 router.post("/addtocart", validateToken, async (req, res) => {
   try {
     const userId = await req?.userId;
-
+    console.log(userId);
     const productData = await req.body;
+    console.log(productData);
+
     const { productId, quantity, size } = productData;
     const checkProduct = await getProductById(productId);
+    const availableQuantity = checkProduct.stocks[size];
 
     if (checkProduct) {
+      if (checkProduct.stocks[size] < quantity) {
+        return res.status(204).send({ message: "Out Of Stock" });
+      }
       const product = await findProductInCart(userId, productId);
 
-      if (product.productId) {
-        const cartData = await cartProductQuantityUpdate(
-          userId,
-          productId,
-          quantity
-        );
+      if (product.productId && product.size === size) {
+        const cartData = await cartProductUpdate(userId, productId, quantity);
 
         return res
           .status(201)
@@ -56,12 +63,34 @@ router.post("/addtocart", validateToken, async (req, res) => {
 router.get("/getcartproduct", validateToken, async (req, res) => {
   try {
     const userId = await req?.userId;
-    const cartData = await fetchCartProduct(userId);
+    const [{ cart }] = await fetchCartProduct(userId);
+    const productIds = cart.map((item) => item.productId);
+    const totalCartItem = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const products = await getProductsById(productIds);
 
-    if (cartData[0].cart.length > 0) {
+    const filteredProducts = products.reduce((acc, item) => {
+      acc[item._id] = item;
+      return acc;
+    }, {});
+    // console.log(filteredProducts);
+    let totalPrice = 0;
+    let totalDiscount = 0;
+    cart.forEach((item) => {
+      const { productPrice, discountPercentage } =
+        filteredProducts[item.productId];
+      const price = productPrice * item.quantity;
+      totalPrice += price;
+      totalDiscount += Math.round((price * discountPercentage) / 100);
+    });
+
+    // console.log(cart, totalCartItem);
+    if (cart) {
       return res.status(200).send({
         message: "cart data fetched successfully",
-        cart: cartData[0].cart,
+        cart,
+        totalCartItem,
+        totalPrice,
+        totalDiscount,
       });
     }
     return res.status(404).send({ message: "cart Data not available" });
@@ -73,21 +102,30 @@ router.get("/getcartproduct", validateToken, async (req, res) => {
 // Router to update product quantity
 // it get product id from body
 
-router.put("/updatecartquantity", validateToken, async (req, res) => {
+router.put("/updatecartquantity/:cartId", validateToken, async (req, res) => {
   try {
     const userId = await req?.userId;
-    const { productId, quantity } = req.body;
-    const product = await findProductInCart(userId, productId);
+    const { cartId } = await req?.params;
 
-    if (product.productId) {
-      const updatedCartProduct = await cartProductQuantityUpdate(
-        userId,
-        productId,
-        quantity
-      );
-      return res
-        .status(200)
-        .send({ message: "product quantity update", updatedCartProduct });
+    const { quantity } = await req?.body;
+
+    const [cartItem] = await findCartItem(userId, cartId);
+    const product = await getProductById(cartItem.productId);
+    // console.log(product.stocks[cartItem.size]);
+    // console.log(quantity);
+
+    if (cartItem) {
+      if (product.stocks[cartItem.size] > quantity) {
+        const updatedCartProduct = await cartProductQuantityUpdate(
+          userId,
+          cartId,
+          quantity
+        );
+        return res
+          .status(200)
+          .send({ message: "product quantity update", updatedCartProduct });
+      }
+      return res.status(409).send({ message: "stock not available" });
     } else
       return res.status(404).send({ message: "Product not found in cart" });
   } catch (error) {
@@ -97,17 +135,17 @@ router.put("/updatecartquantity", validateToken, async (req, res) => {
 
 // Router to delete or remove product from cart
 
-router.delete("/deleteproduct/:productid", validateToken, async (req, res) => {
+router.delete("/deleteproduct/:cartId", validateToken, async (req, res) => {
   try {
-    const { productid } = await req.params;
-    if (!productid) {
-      return res.status(400).send({ message: "product Id is required" });
+    const { cartId } = await req.params;
+    if (!cartId) {
+      return res.status(400).send({ message: "cart Id is required" });
     }
 
     const userId = await req?.userId;
-    const deletedProduct = await findProductInCart(userId, productid);
+    const deletedProduct = await findProductInCart(userId, cartId);
 
-    const updateCart = await removeProductFromCart(userId, productid);
+    const updateCart = await removeProductFromCart(userId, cartId);
 
     if (updateCart) {
       return res.status(200).send({

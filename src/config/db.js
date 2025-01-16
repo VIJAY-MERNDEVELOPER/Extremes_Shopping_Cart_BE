@@ -9,5 +9,6 @@ export function dbConnection() {
     return;
   } catch (error) {
     console.log(`MongoDb connection failed: ${error}`);
+    return;
   }
 }

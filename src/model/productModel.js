@@ -32,7 +32,7 @@ const ProductsSchema = mongoose.Schema({
     required: [true, "Product Brand is required"],
   },
   productImages: {
-    type: [String],
+    type: [Object],
     validate: {
       validator: function (imageArray) {
         return imageArray.length <= 4;
@@ -41,7 +41,7 @@ const ProductsSchema = mongoose.Schema({
     },
   },
   stocks: {
-    total: { type: Number },
+    total: { type: Number, required: true },
     S: { type: Number },
     M: { type: Number },
     L: { type: Number },
@@ -55,14 +55,18 @@ const ProductsSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  discountPercent: {
+  discountPercentage: {
     type: Number,
-  },
-  deliveredAt: {
-    type: Number,
+    required: true,
   },
   isOutOfStock: {
     type: Boolean,
+
+    default: false,
+  },
+
+  deliveredAt: {
+    type: Number,
   },
 
   createdAt: {
@@ -80,5 +84,10 @@ ProductsSchema.pre("save", function (next) {
   next();
 });
 
+ProductsSchema.pre("save", function (next) {
+  this.isOutOfStock = this.stocks.total === 0;
+  next();
+});
+
 export const Products = mongoose.model("products", ProductsSchema);
-export const Category = mongoose.model("Category", categorySchema);
+

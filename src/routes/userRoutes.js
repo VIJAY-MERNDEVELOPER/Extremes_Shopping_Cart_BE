@@ -90,12 +90,12 @@ router.post("/login", async (req, res) => {
         // req.session.user = { username: user.username };
         res.cookie("token", token, {
           httpOnly: true,
-          maxAge: 100000 * 60,
-         
+          maxAge: 100000 * 60 * 60,
+
           signed: true,
         });
 
-        res.cookie("username", user.username, { maxAge: 100000 * 60 });
+        res.cookie("username", user.username, { maxAge: 100000 * 60 * 60 });
 
         return res.status(200).send({
           message: "Login Successful",
